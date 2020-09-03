@@ -28,21 +28,36 @@ class LineCounter:
         for file_line in open(fname, 'r', encoding='UTF-8', errors='ignore').readlines():
             if file_line != '' and file_line != '\n':  # 过滤掉空行
                 count += 1
-        #print (fname + '----', count)
+        # print (fname + '----', count)
         return count
 
     def getFile(self, scanCfg):
         filelists = []
         for parent, dirnames, filenames in os.walk(scanCfg.rootDir):
+
             #for dirname in dirnames:
             #    getFile(os.path.join(parent,dirname)) #递归
             for filename in filenames:
+
+                if (self.isInBlackList(parent, scanCfg.blackList)):
+                    continue
+
                 ext = filename.split('.')[-1]
                 #只统计指定的文件类型，略过一些log和cache文件
                 if ext in scanCfg.typeFilter:
                     filelists.append(os.path.join(parent, filename))
 
         return filelists
+
+    def isInBlackList(self, fname, blackList):
+        for black in blackList:
+            # print ("black:" + black + ", fname:" + fname)
+            if (black in fname):
+                return True
+
+        return False
+
+
 
 if __name__ == '__main__' :
     cfg = {
@@ -55,9 +70,12 @@ if __name__ == '__main__' :
             r"D:\wepop_svn_analyze\S7",
             r"D:\wepop_svn_analyze\S8",
         ],
-        "blackList": [],  # rootDir的相对目录
+        "blackList": [r"TDR"],  # rootDir的相对目录
         "typeFilter": ['cs', 'lua']  # 要扫描的文件类型
     }
+
+    # print ("TDR" in r"D:\wepop_svn_analyze\S8\Scripts\TDR\Proto\cs_backflow.cs")
+
 
     counter = LineCounter()
     for root in cfg["rootDirs"]:
